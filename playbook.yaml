@@ -1,9 +1,14 @@
-- name: ping
-  hosts : servers
-  tasks:
-  - name: ping my hosts
-    ansible.builtin.ping:
+---
+- name: Install Docker using geerlingguy.docker role
+  hosts: all
+  become: true
 
-  - name: print message
-    ansible.builtin.debug:
-      msg: Hello world
+  roles:
+    - geerlingguy.docker
+
+  # Optional: customize Docker here
+  # vars:
+  #   docker_edition: 'ce'
+  #   docker_install_compose: true
+  #   docker_users:
+  #     - SSH_USER
