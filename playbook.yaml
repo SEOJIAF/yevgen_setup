@@ -1,10 +1,12 @@
 ---
-- name: Install Docker and Dozzle
+- name: Install Docker, Dozzle, SearXNG
   hosts: all
   become: true
 
+  vars:
+    docker_install_compose_plugin: true
+  
   roles:
-    - geerlingguy.docker # install docker from extension
-    - docker-compose-plugin #detecs OS and installs docker-compose
+    - role: geerlingguy.docker
     - dozzle
     - searXNG
