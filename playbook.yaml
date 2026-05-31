@@ -16,7 +16,7 @@
         name: docker-compose-plugin
         state: present
         update_cache: true
-      when: ansible_os_family == "Debian"
+      when: ansible_facts["os_family"] == "Debian"
 
     - name: Ensure Dozzle data directory exists
       file:
@@ -54,7 +54,6 @@
       community.docker.docker_container:
         name: dozzle
         state: absent
-        force: true
 
     - name: Start Dozzle container with authentication
       community.docker.docker_container:
