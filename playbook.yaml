@@ -1,4 +1,5 @@
 ---
+
 - name: Install Docker using geerlingguy.docker role
   hosts: all
   become: true
@@ -6,9 +7,33 @@
   roles:
     - geerlingguy.docker
 
-  # Optional: customize Docker here
-  # vars:
-  #   docker_edition: 'ce'
-  #   docker_install_compose: true
-  #   docker_users:
-  #     - SSH_USER
+
+
+- name: Install Dozzle
+  hosts: all
+  become: true
+
+  tasks: 
+  - name: Install docker-compose-plugin
+    apt:
+      state: present
+      update_cache: true
+    when: ansible_os_family == "Debian"
+
+  - name: Pull dozzle image
+    community.docker.docker_image:
+      name: amir20/dozzle:latest
+      source: pull
+      force_source: true
+
+  - name: check dozzle docker volume
+    community.docker.docker_volume:
+      name: dozzle_data
+      state: present
+
+  - name: Remove old Dozzle container if it exists
+    community.docker.docker_container:
+      name: dozzle
+      state: absent
+      force: true
+

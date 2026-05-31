@@ -1,0 +1,51 @@
+---
+- name: Install Docker and Dozzle
+  hosts: all
+  become: true
+
+  roles:
+    - geerlingguy.docker
+
+  tasks:
+    - name: Ensure docker-compose-plugin is installed
+      apt:
+        name: docker-compose-plugin
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Pull Dozzle image
+      community.docker.docker_image:
+        name: amir20/dozzle:latest
+        source: pull
+        force_source: true
+
+    - name: Ensure Dozzle data volume exists
+      community.docker.docker_volume:
+        name: dozzle_data
+        state: present
+
+    - name: Remove old Dozzle container if it exists
+      community.docker.docker_container:
+        name: dozzle
+        state: absent
+        force: true
+
+    - name: Start Dozzle container
+      community.docker.docker_container:
+        name: dozzle
+        image: amir20/dozzle:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "8080:8080"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - dozzle_data:/data
+        env:
+          DOZZLE_HOSTNAME: "{{ inventory_hostname }}"
+          # Optional: enable actions (stop/start/restart containers)
+          # DOZZLE_ENABLE_ACTIONS: "true"
+          # Optional: add auth (uncomment and set)
+          # DOZZLE_USERNAME: "admin"
+          # DOZZLE_PASSWORD: "your_secure_password"
