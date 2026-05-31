@@ -7,7 +7,7 @@
 
   - name: Pull caddy image
     community.docker.docker_image:
-      name: dhi.io/caddy:2-debian13-dev:latest
+      name: caddy:latest
       source: pull
       force_source: true
 
@@ -22,8 +22,12 @@
       service_name: "searxng"
 
       second_domain: "logs.oryks.org"
-      second_name: "dozzle"
+      second_service: "dozzle"
 
+  - name: Stop and remove existing caddy container
+    community.docker.docker_container:
+      name: searxng
+      state: absent
 
   - name: Run Caddy container
     community.docker.docker_container:
