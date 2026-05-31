@@ -1,0 +1,30 @@
+---
+  - name: Ensure SearXNG data directory exists
+    file:
+      path: /opt/searxng/data
+      state: directory
+      mode: '0755'
+
+  - name: Pull searXNG image
+    community.docker.docker_image:
+      name: searxng/searxng:latest
+      source: pull
+      force_source: true
+
+  - name: Start searxng container
+    community.docker.docker_container:
+      name: searxng
+      image: searxng/searxng:latest
+      state: started
+      restart_policy: unless-stopped
+      networks:
+        - name: oryks
+      volumes:
+        - "{{ playbook_dir }}/config:/etc/searxng"
+        - "{{ playbook_dir }}/data:/var/cache/searxng"
+      env:
+        SEARXNG_BASE_URL: "https://search.oryks.org/"
+
+
+        # docker run --name searxng -d     -- network oryks     -v "./config/:/etc/searxng/"     -v "./data/:/var/cache/searxng/"     docker.io/searxng/searxng:latest
+        # sudo docker run --name searxng -d   --network oryks   -v "$PWD/config:/etc/searxng"   -v "$PWD/data:/var/cache/searxng"   -e SEARXNG_BASE_URL=https://search.oryks.org/   searxng/searxng:latest
