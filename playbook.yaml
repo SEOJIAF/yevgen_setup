@@ -4,5 +4,6 @@
   become: true
 
   roles:
-    - geerlingguy.docker
+    - geerlingguy.docker # install docker from extension
+    - docker-compose-plugin #detecs OS and installs docker-compose
     - dozzle

@@ -1,0 +1,13 @@
+  - name: Install docker-compose-plugin-debian
+    apt:
+      name: docker-compose-plugin
+      state: present
+      update_cache: true
+    when: ansible_facts["os_family"] == "Debian"
+
+  - name: Install docker-compose-plugin-fedora
+    dnf:
+      name: docker-compose-plugin
+      state: present
+      update_cache: true
+    when: ansible_facts["os_family"] == "Fedora"
