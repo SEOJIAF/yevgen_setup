@@ -1,0 +1,60 @@
+---
+  - name: Install docker-compose-plugin
+    apt:
+      name: docker-compose-plugin
+      state: present
+      update_cache: true
+    when: ansible_facts["os_family"] == "Debian"
+
+  - name: Ensure Dozzle data directory exists
+    file:
+      path: /opt/dozzle/data
+      state: directory
+      mode: '0755'
+
+  - name: Pull Dozzle image
+    community.docker.docker_image:
+      name: amir20/dozzle:latest
+      source: pull
+      force_source: true
+
+  - name: Generate Dozzle users.yml with auth
+    community.docker.docker_container:
+      name: dozzle-generate-users
+      image: amir20/dozzle:latest
+      command: >
+        generate admin
+        --password {{ lookup('env', 'DOZZLE_PASSWORD') }}
+        --email {{ lookup('env', 'DOZZLE_EMAIL') }}
+        --name {{ lookup('env', 'DOZZLE_USERNAME') }}
+      volumes:
+        - /opt/dozzle/data:/data
+      auto_remove: true
+    register: generate_result
+
+  - name: Check users.yml permissions
+    file:
+      path: /opt/dozzle/data/users.yml
+      state: file
+      mode: '0644'
+
+  - name: Stop and remove existing Dozzle container
+    community.docker.docker_container:
+      name: dozzle
+      state: absent
+
+  - name: Start Dozzle container with authentication
+    community.docker.docker_container:
+      name: dozzle
+      image: amir20/dozzle:latest
+      state: started
+      restart_policy: unless-stopped
+      networks:
+        - name: oryks
+      ports:
+        - "8080:8080"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /opt/dozzle/data:/data
+      env:
+        DOZZLE_AUTH_PROVIDER: simple
