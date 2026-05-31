@@ -1,0 +1,55 @@
+---
+  - name: Ensure caddy data directory exists
+    file:
+      path: /opt/caddy/data
+      state: directory
+      mode: '0755'
+
+  - name: Pull caddy image
+    community.docker.docker_image:
+      name: dhi.io/caddy:2-debian13-dev:latest
+      source: pull
+      force_source: true
+
+  - name: Deploy Caddyfile
+    template:
+      src: Caddyfile.j2
+      dest: /etc/caddy/Caddyfile
+    vars:
+      service_port: 8080
+    
+      domain_name: "search.oryks.org"
+      service_name: "searxng"
+
+      second_domain: "logs.oryks.org"
+      second_name: "dozzle"
+
+
+  - name: Run Caddy container
+    community.docker.docker_container:
+      name: caddy
+      image: caddy:latest
+      state: started
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - /etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+        - caddy_data:/data
+        - caddy_config:/config
+      networks:
+        - name: oryks
+      restart_policy: unless-stopped
+
+
+# sudo docker run -d   --name caddy   --network oryks   -p 80:80   -p 443:443   -v /etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro   -v caddy_data:/data   -v caddy_config:/config   --restart unless-stopped   caddy:latest
+
+
+# SSH_USER@yevgen:~/.config/procps$ cat /etc/caddy/Caddyfile
+# search.oryks.org {
+#     reverse_proxy searxng:8080
+# }
+
+# logs.oryks.org {
+#     reverse_proxy dozzle:8080
+# }

@@ -1,0 +1,7 @@
+{{ domain_name }} {
+    reverse_proxy {{ service_name }}:{{ service_port }}
+}
+
+{{ second_domain }} {
+    reverse_proxy {{ second_service }}:{{ service_port }}
+}
