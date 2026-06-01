@@ -1,8 +1,27 @@
-- name: Ensure SearXNG data directory exists
-  file:
-    path: /opt/searxng/data
+- name: Ensure SearXNG config directory exists
+  ansible.builtin.file:
+    path: /opt/searxng/config
     state: directory
-    mode: '0755'
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy searxng settings.yml (limiter disabled)
+  ansible.builtin.copy:
+    dest: /opt/searxng/config/settings.yml
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      use_default_settings: true
+      server:
+        base_url: "https://search.oryks.org/"
+        secret_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+        limiter: false
+      search:
+        formats:
+          - html
+          - json
 
 - name: Pull searXNG image
   community.docker.docker_image:
@@ -15,12 +34,11 @@
     name: searxng
     image: searxng/searxng:latest
     state: started
-    recreate: false
     restart_policy: unless-stopped
     networks:
       - name: oryks
     volumes:
-      - "{{ playbook_dir }}/config:/etc/searxng"
-      - "{{ playbook_dir }}/data:/var/cache/searxng"
+      - /opt/searxng/config:/etc/searxng
+      - /opt/searxng/data:/var/cache/searxng
     env:
       SEARXNG_BASE_URL: "https://search.oryks.org/"

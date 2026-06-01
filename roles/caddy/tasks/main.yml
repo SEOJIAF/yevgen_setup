@@ -26,6 +26,7 @@
 
       third_domain: "gitea.oryks.org"
       third_service: "gitea"
+      third_port: "3000"
 
   - name: Stop and remove existing caddy container
     community.docker.docker_container:
