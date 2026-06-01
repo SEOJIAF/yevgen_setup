@@ -20,7 +20,7 @@ services:
     restart: always
     networks:
       - gitea
-      - ******* 
+      - oryks 
     volumes:
       - ./gitea:/data
     ports:

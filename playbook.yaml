@@ -1,5 +1,5 @@
 ---
-- name: Install Docker, Dozzle, SearXNG
+- name: Install Docker, Dozzle, SearXNG, gitea
   hosts: all
   become: true
 
@@ -10,4 +10,5 @@
     - role: geerlingguy.docker
     - dozzle
     - searXNG
+    - gitea
     - caddy

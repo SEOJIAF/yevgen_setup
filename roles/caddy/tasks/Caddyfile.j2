@@ -5,3 +5,7 @@
 {{ second_domain }} {
     reverse_proxy {{ second_service }}:{{ service_port }}
 }
+
+{{ third_domain }} {
+    reverse_proxy {{ third_service }}:{{ service_port }}
+}

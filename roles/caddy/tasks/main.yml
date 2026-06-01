@@ -24,6 +24,9 @@
       second_domain: "logs.oryks.org"
       second_service: "dozzle"
 
+      third_domain: "gitea.oryks.org"
+      third_service: "gitea"
+
   - name: Stop and remove existing caddy container
     community.docker.docker_container:
       name: searxng
