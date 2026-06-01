@@ -31,10 +31,7 @@
       state: file
       mode: '0644'
 
-  - name: Stop and remove existing Dozzle container
-    community.docker.docker_container:
-      name: dozzle
-      state: absent
+
 
   - name: Start Dozzle container with authentication
     community.docker.docker_container:
