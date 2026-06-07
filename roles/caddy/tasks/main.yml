@@ -42,11 +42,6 @@
       third_service: "gitea"
       third_port: "3000"
 
-  - name: Stop and remove existing caddy container
-    community.docker.docker_container:
-      name: caddy
-      state: absent
-
   - name: Run Caddy container
     community.docker.docker_container:
       name: caddy

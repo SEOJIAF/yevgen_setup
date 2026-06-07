@@ -12,14 +12,6 @@
     path: /home/SSH_USER/gitea/docker-compose.yml
   register: gitea_compose
 
-- name: Remove old Gitea stack
-  become: true
-  community.docker.docker_compose_v2:
-    project_src: /home/SSH_USER/gitea
-    state: absent
-    remove_orphans: true
-  when: gitea_compose.stat.exists
-
 - name: Remove old Gitea data directories
   become: true
   ansible.builtin.file:
@@ -28,6 +20,7 @@
   loop:
     - /home/SSH_USER/gitea/postgres
     - /home/SSH_USER/gitea/gitea
+  when: not gitea_compose.stat.exists
 
 - name: Recreate Gitea data directories
   become: true
@@ -40,6 +33,7 @@
   loop:
     - { path: "/home/SSH_USER/gitea/postgres", owner: "1000", group: "1000" }
     - { path: "/home/SSH_USER/gitea/gitea", owner: "1000", group: "1000" }
+  when: not gitea_compose.stat.exists
 
 - name: Write Gitea compose file
   become: true
