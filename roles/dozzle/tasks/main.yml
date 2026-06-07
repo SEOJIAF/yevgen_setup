@@ -1,4 +1,9 @@
 ---
+  - name: Ensure Docker network oryks exists
+    community.docker.docker_network:
+      name: oryks
+      state: present
+
   - name: Ensure Dozzle data directory exists
     file:
       path: /opt/dozzle/data

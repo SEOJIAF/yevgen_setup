@@ -11,6 +11,20 @@
       source: pull
       force_source: true
 
+  - name: Ensure caddy config directory exists
+    file:
+      path: /etc/caddy
+      state: directory
+      mode: '0755'
+
+  - name: Ensure caddy Docker volumes exist
+    community.docker.docker_volume:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - caddy_data
+      - caddy_config
+
   - name: Deploy Caddyfile
     template:
       src: Caddyfile.j2
@@ -30,7 +44,7 @@
 
   - name: Stop and remove existing caddy container
     community.docker.docker_container:
-      name: searxng
+      name: caddy
       state: absent
 
   - name: Run Caddy container
