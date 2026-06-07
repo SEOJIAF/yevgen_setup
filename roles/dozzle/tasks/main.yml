@@ -10,32 +10,35 @@
       state: directory
       mode: '0755'
 
+  - name: Install htpasswd for bcrypt password hashing
+    ansible.builtin.apt:
+      name: apache2-utils
+      state: present
+      update_cache: true
+
   - name: Pull Dozzle image
     community.docker.docker_image:
       name: amir20/dozzle:latest
       source: pull
       force_source: true
 
-  - name: Generate Dozzle users.yml with auth
-    community.docker.docker_container:
-      name: dozzle-generate-users
-      image: amir20/dozzle:latest
-      command: >
-        generate admin
-        --password {{ lookup('env', 'DOZZLE_PASSWORD') }}
-        --email {{ lookup('env', 'DOZZLE_EMAIL') }}
-        --name {{ lookup('env', 'DOZZLE_USERNAME') }}
-      volumes:
-        - /opt/dozzle/data:/data
-      auto_remove: true
-    register: generate_result
+  - name: Generate bcrypt password hash
+    ansible.builtin.shell: |
+      htpasswd -nbB "{{ lookup('env', 'DOZZLE_USERNAME') }}" "{{ lookup('env', 'DOZZLE_PASSWORD') }}" | cut -d: -f2
+    register: dozzle_pw_hash
+    changed_when: false
+    no_log: true
 
-  - name: Check users.yml permissions
-    file:
-      path: /opt/dozzle/data/users.yml
-      state: file
+  - name: Write Dozzle users.yml
+    ansible.builtin.copy:
+      dest: /opt/dozzle/data/users.yml
+      content: |
+        users:
+          {{ lookup('env', 'DOZZLE_USERNAME') }}:
+            name: {{ lookup('env', 'DOZZLE_USERNAME') }}
+            email: {{ lookup('env', 'DOZZLE_EMAIL') }}
+            password: "{{ dozzle_pw_hash.stdout }}"
       mode: '0644'
-
 
 
   - name: Start Dozzle container with authentication
