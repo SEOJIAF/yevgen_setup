@@ -1,12 +1,33 @@
-- name: Ensure SearXNG config directory exists
+- name: Ensure SearXNG directories exist
+  become: true
   ansible.builtin.file:
-    path: /opt/searxng/config
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /opt/searxng
+    - /opt/searxng/config
+    - /opt/searxng/data
+
+- name: Reset SearXNG data
+  become: true
+  ansible.builtin.file:
+    path: /opt/searxng/data
+    state: absent
+
+- name: Recreate SearXNG data directory
+  become: true
+  ansible.builtin.file:
+    path: /opt/searxng/data
     state: directory
     owner: root
     group: root
     mode: "0755"
 
-- name: Deploy searxng settings.yml (limiter disabled)
+- name: Write SearXNG settings
+  become: true
   ansible.builtin.copy:
     dest: /opt/searxng/config/settings.yml
     owner: root
@@ -16,25 +37,38 @@
       use_default_settings: true
       server:
         base_url: "https://search.oryks.org/"
-        secret_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+        secret_key: "{{ lookup('password', 'credentials/searxng_secret chars=ascii_letters,digits length=64') }}"
         limiter: false
       search:
         formats:
           - html
           - json
+      engines:
+        - name: radio browser
+          disabled: true
 
-- name: Pull searXNG image
+- name: Pull SearXNG image
+  become: true
   community.docker.docker_image:
     name: searxng/searxng:latest
     source: pull
     force_source: true
 
-- name: Start searxng container
+- name: Remove old SearXNG container
+  become: true
+  community.docker.docker_container:
+    name: searxng
+    state: absent
+    keep_volumes: false
+
+- name: Start SearXNG container
+  become: true
   community.docker.docker_container:
     name: searxng
     image: searxng/searxng:latest
     state: started
     restart_policy: unless-stopped
+    recreate: true
     networks:
       - name: oryks
     volumes:

@@ -1,18 +1,42 @@
-- name: Ensure gitea data directory exists
-  ansible.builtin.file:
-    path: /opt/caddy/gitea
-    state: directory
-    mode: "0755"
-
-- name: Ensure gitea compose directory exists
+- name: Ensure Gitea project directory exists
+  become: true
   ansible.builtin.file:
     path: /home/SSH_USER/gitea
     state: directory
-    mode: "0755"
     owner: SSH_USER
     group: SSH_USER
+    mode: "0755"
 
-- name: Write docker-compose.yml
+- name: Remove old Gitea stack
+  become: true
+  community.docker.docker_compose_v2:
+    project_src: /home/SSH_USER/gitea
+    state: absent
+    remove_orphans: true
+
+- name: Remove old Gitea data directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /home/SSH_USER/gitea/postgres
+    - /home/SSH_USER/gitea/gitea
+
+- name: Recreate Gitea data directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "0755"
+  loop:
+    - { path: "/home/SSH_USER/gitea/postgres", owner: "1000", group: "1000" }
+    - { path: "/home/SSH_USER/gitea/gitea", owner: "1000", group: "1000" }
+
+- name: Write Gitea compose file
+  become: true
   ansible.builtin.copy:
     dest: /home/SSH_USER/gitea/docker-compose.yml
     owner: SSH_USER
@@ -37,8 +61,8 @@
             GITEA__database__HOST: db:5432
             GITEA__database__NAME: gitea
             GITEA__database__USER: gitea
-            GITEA__database__PASSWD: "{{ gitea_db_password }}"
-            GITEA__server__ROOT_URL: "{{ gitea_root_url }}"
+            GITEA__database__PASSWD: "{{ lookup('password', 'credentials/gitea_db_password chars=ascii_letters,digits length=32') }}"
+            GITEA__server__ROOT_URL: "https://git.oryks.org/"
           networks:
             - gitea
             - oryks
@@ -56,13 +80,32 @@
           restart: always
           environment:
             POSTGRES_USER: gitea
-            POSTGRES_PASSWORD: "{{ gitea_db_password }}"
+            POSTGRES_PASSWORD: "{{ lookup('password', 'credentials/gitea_db_password chars=ascii_letters,digits length=32') }}"
             POSTGRES_DB: gitea
           networks:
             - gitea
           volumes:
             - ./postgres:/var/lib/postgresql/data
 
-  vars:
-    gitea_db_password: "replace-with-real-secret"
-    gitea_root_url: "https://git.oryks.org/"
+- name: Pull Gitea image
+  become: true
+  community.docker.docker_image:
+    name: docker.gitea.com/gitea:1.26.2
+    source: pull
+    force_source: true
+
+- name: Pull Postgres image
+  become: true
+  community.docker.docker_image:
+    name: postgres:14
+    source: pull
+    force_source: true
+
+- name: Start Gitea stack
+  become: true
+  community.docker.docker_compose_v2:
+    project_src: /home/SSH_USER/gitea
+    state: present
+    remove_orphans: true
+    wait: true
+    wait_timeout: 120
