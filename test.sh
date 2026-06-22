@@ -1,3 +1,3 @@
 #!/bin/sh
-ansible-inventory -i inventory.ini --list
-ansible servers -m ping -i inventory.ini
+ansible-inventory -i inventory.yml --list
+ansible servers -m ping -i inventory.yml
