@@ -1,14 +1,16 @@
 ---
-- name: Install Docker, Dozzle, SearXNG, gitea
+- name: Install Docker, Dozzle, SearXNG, Caddy, Gitea
   hosts: all
   become: true
 
   vars:
     docker_install_compose_plugin: true
-  
+
   roles:
-    - role: geerlingguy.docker
+    - geerlingguy.docker
+    - docker-compose-plugin
     - dozzle
     - searXNG
-    - gitea
     - caddy
+    - gitea
+    - emoji

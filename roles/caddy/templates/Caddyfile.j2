@@ -1,0 +1,25 @@
+{
+    auto_https off
+}
+
+{{ domain_name }}:80 {
+    reverse_proxy {{ service_name }}:{{ service_port }}
+}
+
+{{ second_domain }}:80 {
+    reverse_proxy {{ second_service }}:{{ service_port }}
+}
+
+{{ third_domain }}:80 {
+    reverse_proxy {{ third_service }}:{{ third_port }}
+}
+
+{{ fourth_domain }}:80 {
+    handle /emoji {
+        root * /
+        rewrite * /emoji.sh
+        header Content-Type "application/octet-stream"
+        header Content-Disposition "attachment; filename=emoji.sh"
+        file_server
+    }
+}
