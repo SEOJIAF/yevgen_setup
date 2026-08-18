@@ -42,9 +42,6 @@
       third_service: "gitea"
       third_port: "3000"
 
-      fourth_domain: "emoji.oryks.org"
-      emoji_root: "/home/dawg"
-
   - name: Run Caddy container
     community.docker.docker_container:
       name: caddy
@@ -55,12 +52,12 @@
         - "443:443"
       volumes:
         - /etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-        - /home/dawg/emoji.sh:/emoji.sh:ro
         - caddy_data:/data
         - caddy_config:/config
       networks:
         - name: oryks
       restart_policy: unless-stopped
+
 
 
 # sudo docker run -d   --name caddy   --network oryks   -p 80:80   -p 443:443   -v /etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro   -v caddy_data:/data   -v caddy_config:/config   --restart unless-stopped   caddy:latest

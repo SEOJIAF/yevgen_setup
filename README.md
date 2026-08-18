@@ -30,7 +30,6 @@ Ansible-based provisioning for a personal homelab server running self-hosted ser
 | **SearXNG** | `search.oryks.org` | Privacy-respecting metasearch engine       |
 | **Dozzle**  | `logs.oryks.org`   | Real-time Docker log viewer (auth required) |
 | **Gitea**   | `git.oryks.org`    | Self-hosted Git service + PostgreSQL       |
-| **Emoji**   | `emoji.oryks.org`  | Random ASCII art from asciilol.art         |
 
 ## Requirements
 
@@ -56,7 +55,7 @@ cp .env.example .env
 ## Structure
 
 ```
-├── playbook.yaml           # Main playbook (Docker → Dozzle → SearXNG → Caddy → Gitea → Emoji)
+├── playbook.yaml           # Main playbook (Docker → Dozzle → SearXNG → Caddy → Gitea)
 ├── inventory.ini           # Target server definition
 ├── requirements.yml        # Ansible Galaxy dependencies (geerlingguy.docker, community.docker)
 ├── run.sh                  # Entry point for provisioning
@@ -66,7 +65,6 @@ cp .env.example .env
     ├── dozzle/             # Dozzle log viewer container setup
     ├── searXNG/            # SearXNG metasearch engine container setup
     ├── gitea/              # Gitea + PostgreSQL with docker-compose
-    ├── emoji/              # Random ASCII art served at emoji.oryks.org
     ├── caddy/              # Caddy reverse proxy with Caddyfile template
     └── docker-compose-plugin/  # (Legacy) docker-compose-plugin installation
 ```

@@ -14,12 +14,3 @@
     reverse_proxy {{ third_service }}:{{ third_port }}
 }
 
-{{ fourth_domain }}:80 {
-    handle /emoji {
-        root * /
-        rewrite * /emoji.sh
-        header Content-Type "application/octet-stream"
-        header Content-Disposition "attachment; filename=emoji.sh"
-        file_server
-    }
-}
